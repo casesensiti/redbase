@@ -32,6 +32,7 @@ extern QL_Manager *pQlm;
 #define E_DUPLICATEATTR     -8
 #define E_TOOLONG           -9
 #define E_STRINGTOOLONG     -10
+#define E_INVMBRSIZE        -11
 
 /*
  * file pointer to which error messages are printed
@@ -482,6 +483,10 @@ static int parse_format_string(char *format_string, AttrType *type, int *len)
             *len = sizeof(float);
             break;
          case 's':
+         case 'm':
+            *type = MBR;
+            *len = sizeof(struct MBR);
+            break;
          case 'c':
             return E_NOLENGTH;
          default:
@@ -505,6 +510,11 @@ static int parse_format_string(char *format_string, AttrType *type, int *len)
                return E_INVREALSIZE;
             break;
          case 's':
+         case 'm':
+            *type = MBR;
+            if(*len != sizeof(struct MBR))
+               return E_INVMBRSIZE;
+            break;
          case 'c':
             *type = STRING;
             if(*len < 1 || *len > MAXSTRINGLEN)
@@ -548,8 +558,12 @@ static void print_error(char *errmsg, RC errval)
          break;
       case E_INVREALSIZE:
          fprintf(ERRFP, "invalid size for REAL attribute (should be %d)\n",
-               (int)sizeof(real));
-         break;
+                 (int)sizeof(real));
+           break;
+      case E_INVMBRSIZE:
+         fprintf(ERRFP, "invalid size for MBR attribute (should be %d)\n",
+                 (int)sizeof(struct MBR));
+           break;
       case E_INVFORMATSTRING:
          fprintf(ERRFP, "invalid format string\n");
          break;

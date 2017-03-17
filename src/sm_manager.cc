@@ -138,6 +138,8 @@ bool SM_Manager::isValidAttrType(AttrInfo attribute){
     return true;
   if(type == STRING && (length > 0) && length < MAXSTRINGLEN)
     return true;
+  if(type == MBR && length == 16)
+    return true;
 
   return false;
 }
