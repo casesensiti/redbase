@@ -5,6 +5,8 @@
 #ifndef REDBASE_H
 #define REDBASE_H
 
+//#define DEBUG
+
 // Please DO NOT include any other files in this file.
 
 //
@@ -54,13 +56,21 @@ typedef int RC;
 // and PF layers
 const int ALL_PAGES = -1;
 
+
+struct MBR {
+    float llx; // lower left x
+    float lly;
+    float urx; // upper right x
+    float ury;
+} ;
 //
 // Attribute types
 //
 enum AttrType {
     INT,
     FLOAT,
-    STRING
+    STRING,
+    MBR
 };
 
 //

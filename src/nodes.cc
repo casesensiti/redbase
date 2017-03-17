@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <parser_internal.h>
 #include "redbase.h"
 #include "parser_internal.h"
 #include "y.tab.h"
@@ -84,6 +85,10 @@ NODE *newnode(NODEKIND kind)
  */
 NODE *create_table_node(char *relname, NODE *attrlist)
 {
+#ifdef DEBUG
+    std::cout << attrlist->u.LIST.curr->u.ATTRTYPE.attrname << std::endl;
+    std::cout << attrlist->u.LIST.curr->u.ATTRTYPE.type << std::endl;
+#endif
     NODE *n = newnode(N_CREATETABLE);
 
     n -> u.CREATETABLE.relname = relname;
@@ -285,7 +290,28 @@ NODE *value_node(AttrType type, void *value)
     case STRING:
       n->u.VALUE.sval = (char *)value;
       break;
+    case MBR:
+      break;
     }
+
+    return n;
+}
+
+NODE *value_node(AttrType type, void *value1, void *value2, void *value3, void *value4)
+{
+#ifdef DEBUG
+    std::cout << "value_node for MBR is invoked ";
+#endif
+    NODE *n = newnode(N_VALUE);
+    if (type != MBR) {
+        std::cout << "in value_node, MBR type wanted\n";
+        return NULL;
+    }
+    n->u.VALUE.mbr.llx = *(float *)value1;
+    n->u.VALUE.mbr.lly = *(float *)value2;
+    n->u.VALUE.mbr.urx = *(float *)value3;
+    n->u.VALUE.mbr.ury = *(float *)value4;
+
     return n;
 }
 

@@ -508,6 +508,10 @@ value
    {
       $$ = value_node(FLOAT, (void *)& $1);
    }
+   | '&' T_REAL ',' T_REAL ',' T_REAL ',' T_REAL '&'
+   {
+      $$ = value_node(MBR, (void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
    ;
 
 opt_relname
