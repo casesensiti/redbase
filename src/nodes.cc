@@ -307,6 +307,7 @@ NODE *value_node(AttrType type, void *value1, void *value2, void *value3, void *
         std::cout << "in value_node, MBR type wanted\n";
         return NULL;
     }
+    n->u.VALUE.type = type;
     n->u.VALUE.mbr.llx = *(float *)value1;
     n->u.VALUE.mbr.lly = *(float *)value2;
     n->u.VALUE.mbr.urx = *(float *)value3;

@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <parser_internal.h>
 #include "redbase.h"
 #include "parser_internal.h"
 #include "y.tab.h"
@@ -446,6 +447,9 @@ static void mk_value(NODE *node, Value &value)
          break;
       case STRING:
          value.data = (void *)node->u.VALUE.sval;
+         break;
+      case MBR:
+         value.data = (void *)&node->u.VALUE.mbr;
          break;
    }
 }
