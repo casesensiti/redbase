@@ -14,6 +14,20 @@
 #include <cstdlib>
 #include <cstring>
 
+
+//
+// IX_FileHeader: Header of index file
+//
+struct IX_FileHeader {
+    int entrySize;            // entry size in file
+    int M;                    // max # of entries per node
+    int m;                    // min # of entries per node
+    int numPage;              // number of pages, include header page
+    int numFreePage;          // number of free pages in the linked list
+    PageNum rootPage;         // pointer to root node
+    PageNum firstFreePage;    // pointer to the first free page
+};
+
 //
 // IX_IndexHandle: IX Index File interface
 //
@@ -30,6 +44,7 @@ public:
 
     // Force index files to disk
     RC ForcePages();
+private:
 };
 
 //
@@ -76,6 +91,11 @@ public:
 
     // Close an Index
     RC CloseIndex(IX_IndexHandle &indexHandle);
+private:
+    PF_Manager &pfm;
+    // helper to construct the index file name
+    RC getIndexFileName(const char* fileName, int indexNo, char* dest);
+
 };
 
 //
@@ -94,6 +114,8 @@ void IX_PrintError(RC rc);
 #define IX_INVALIDSCAN          (START_IX_WARN + 8) // Invalid IX_Indexscsan
 #define IX_INVALIDENTRY         (START_IX_WARN + 9) // Entry not in the index
 #define IX_EOF                  (START_IX_WARN + 10)// End of index file
+#define IX_BADINDEXNO           (START_IX_WARN + 11)// Bad Specification for Index File, indexNo too big
+#define IX_BADENTRYSIZE         (START_IX_WARN + 12)// Bad entry or header size
 #define IX_LASTWARN             IX_EOF
 
 #define IX_ERROR                (START_IX_ERR - 0) // error

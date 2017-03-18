@@ -5,7 +5,7 @@
 #ifndef REDBASE_H
 #define REDBASE_H
 
-//#define DEBUG
+#define MY_DEBUG
 
 // Please DO NOT include any other files in this file.
 

@@ -34,6 +34,7 @@ extern QL_Manager *pQlm;
 #define E_TOOLONG           -9
 #define E_STRINGTOOLONG     -10
 #define E_INVMBRSIZE        -11
+#define E_INVMBRVAL         -12
 
 /*
  * file pointer to which error messages are printed
@@ -450,6 +451,8 @@ static void mk_value(NODE *node, Value &value)
          break;
       case MBR:
          value.data = (void *)&node->u.VALUE.mbr;
+         if(node->u.VALUE.mbr.llx > node->u.VALUE.mbr.urx || node->u.VALUE.mbr.lly > node->u.VALUE.mbr.ury)
+             printf("invalid mbr input");
          break;
    }
 }

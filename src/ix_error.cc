@@ -16,7 +16,7 @@ using namespace std;
 // Error table
 //
 static char *IX_WarnMsg[] = {
-  (char*)"bad index specification",
+  (char*)"bad index specification, only accept MBR type",
   (char*)"bad index name",
   (char*)"invalid index handle",
   (char*)"invalid index file",
@@ -27,7 +27,9 @@ static char *IX_WarnMsg[] = {
   (char*)"invalid scan instance",
   (char*)"invalid record entry",
   (char*)"end of file",
-  (char*)"IX warning"
+  (char*)"IX warning",
+  (char*)"index number too big",
+  (char*)"bad entry or header size"
 };
 
 static char *IX_ErrorMsg[] = {
