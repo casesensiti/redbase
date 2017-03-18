@@ -32,6 +32,7 @@ struct IX_FileHeader {
 // IX_IndexHandle: IX Index File interface
 //
 class IX_IndexHandle {
+    friend class IX_Manager;
 public:
     IX_IndexHandle();
     ~IX_IndexHandle();
@@ -45,6 +46,10 @@ public:
     // Force index files to disk
     RC ForcePages();
 private:
+    bool headerModified; // if header modified, should rewrite the header page
+    bool openedIH; // whether this handle has been opened
+    IX_FileHeader fileHeader;
+    PF_FileHandle pfh; // file handler for the opened index file
 };
 
 //

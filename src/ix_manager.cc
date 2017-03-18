@@ -95,7 +95,9 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     header->numFreePage = 0;
     header->numPage = 2;
     header->rootPage = rPage;
-
+#ifdef MY_DEBUG
+    printf("EntrySize: %d, M: %d\n", entrySize, M);
+#endif
     //memcpy(pData, &header, sizeof(struct RM_FileHeader));
 
     // always unpin the page, and close the file before exiting
@@ -130,7 +132,38 @@ RC IX_Manager::DestroyIndex(const char *fileName, int indexNo)
 RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
                  IX_IndexHandle &indexHandle)
 {
+    RC rc = 0;
+    if (fileName == NULL)
+        return IX_BADFILENAME;
+    if (indexHandle.openedIH)
+        return IX_INVALIDINDEXHANDLE;
+    char indexFileName[MAXSTRINGLEN+10];
+    if ((rc = getIndexFileName(fileName, indexNo, indexFileName)))
+        return rc;
+    // open file
+    if (rc = pfm.OpenFile(indexFileName, indexHandle.pfh))
+        return rc;
+    // read header
+    PF_PageHandle ph;
+    PageNum page;
+    if ((rc = indexHandle.pfh.GetFirstPage(ph)) || (rc = ph.GetPageNum(page))) {
+        indexHandle.pfh.UnpinPage(page);
+        pfm.CloseFile(indexHandle.pfh);
+        return rc;
+    }
+    char* pData;
+    if (rc = ph.GetData(pData))
+        return rc;
+    // set up private variables
+    memcpy(&indexHandle.fileHeader, pData, sizeof(struct IX_FileHeader));
+    indexHandle.openedIH = true;
+    indexHandle.headerModified = false;
+    // Unpin the header page
+    RC rc2;
+    if((rc2 = indexHandle.pfh.UnpinPage(page)))
+        return (rc2);
 
+    return rc;
 }
 
 /*
@@ -138,6 +171,31 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
  */
 RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
- 
+    RC rc = 0;
+    PF_PageHandle ph;
+    PageNum page;
+    char* pData;
+    if (indexHandle.openedIH != true)
+        return IX_INVALIDINDEXHANDLE;
+    // if header modified, rewrite header page
+    if (indexHandle.headerModified) {
+        if ((rc = indexHandle.pfh.GetFirstPage(ph)) || (rc = ph.GetPageNum(page)))
+            return rc;
+        if((rc = ph.GetData(pData))){
+            RC rc2;
+            if((rc2 = indexHandle.pfh.UnpinPage(page)))
+                return (rc2);
+            return (rc);
+        }
+        memcpy(pData, &indexHandle.fileHeader, sizeof(struct IX_FileHeader));
+        if((rc = indexHandle.pfh.MarkDirty(page)) || (rc = indexHandle.pfh.UnpinPage(page)))
+            return (rc);
+    }
+    // close PF_PageHandler
+    if ((rc = pfm.CloseFile(indexHandle.pfh)))
+        return rc;
+    indexHandle.openedIH = false;
+    indexHandle.headerModified = false;
+
 }
 

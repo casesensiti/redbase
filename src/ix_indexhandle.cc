@@ -13,7 +13,7 @@
 
 IX_IndexHandle::IX_IndexHandle()
 {
-  // Implement this
+    openedIH = false;
 }
 
 IX_IndexHandle::~IX_IndexHandle()
