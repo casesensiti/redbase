@@ -662,6 +662,10 @@ ostream &operator<<(ostream &s, const Value &v)
       case STRING:
          s << " (char *)data=" << (char *)v.data;
          break;
+      case MBR:
+         struct MBR m = *(struct MBR *)v.data;
+         s << " *(struct MBR *)data=ll(" << m.llx << ", " << m.lly << ") ur(" << m.urx << ", " << m.ury << ")";
+         break;
    }
    return s;
 }
@@ -705,6 +709,9 @@ ostream &operator<<(ostream &s, const AttrType &at)
          break;
       case STRING:
          s << "STRING";
+         break;
+      case MBR:
+         s << "MBR";
          break;
    }
    return s;

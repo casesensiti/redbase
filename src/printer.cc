@@ -224,6 +224,7 @@ void Printer::Print(ostream &c, const char * const data)
     char str[MAXPRINTSTRING], strSpace[50];
     int i, a;
     float b;
+    struct MBR m;
 
     if (data == NULL)
         return;
@@ -264,6 +265,15 @@ void Printer::Print(ostream &c, const char * const data)
         if (attributes[i].attrType == FLOAT) {
             memcpy (&b, (data+attributes[i].offset), sizeof(float));
             sprintf(strSpace, "%f",b);
+            c << strSpace;
+            if (strlen(psHeader[i]) < 12)
+                Spaces(12, strlen(strSpace));
+            else
+                Spaces(strlen(psHeader[i]), strlen(strSpace));
+        }
+        if (attributes[i].attrType == MBR) {
+            memcpy (&m, (data+attributes[i].offset), sizeof(struct MBR));
+            sprintf(strSpace, "ll(%f, %f) ur(%f, %f)", m.llx, m.lly, m.urx, m.ury);
             c << strSpace;
             if (strlen(psHeader[i]) < 12)
                 Spaces(12, strlen(strSpace));
