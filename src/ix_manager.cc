@@ -162,7 +162,9 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
     RC rc2;
     if((rc2 = indexHandle.pfh.UnpinPage(page)))
         return (rc2);
-
+#ifdef MY_DEBUG
+    printf("Index open success");
+#endif
     return rc;
 }
 
@@ -196,6 +198,6 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
         return rc;
     indexHandle.openedIH = false;
     indexHandle.headerModified = false;
-
+    return rc;
 }
 

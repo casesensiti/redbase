@@ -24,6 +24,14 @@ IX_IndexHandle::~IX_IndexHandle()
 RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
 {
   // Implement this
+    RC rc = 0;
+    struct MBR m = *(struct MBR *)pData;
+#ifdef MY_DEBUG
+    printf("InsertEntry of IX is invoked, with data %f, %f, %f, %f\n", m.llx, m.lly, m.urx, m.ury);
+#endif
+
+
+    return rc;
 }
 
 RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)

@@ -463,9 +463,12 @@ RC SM_Manager::CreateIndex(const char *relName,
     return (rc);
 
   // scan through the entire file:
-  if((rc = fs.OpenScan(fh, INT, 4, 0, NO_OP, NULL))){
+  if((rc = fs.OpenScan(fh, aEntry->attrType, aEntry->attrLength, aEntry->offset, NO_OP, NULL))){
     return (rc);
   }
+#ifdef MY_DEBUG
+    printf("In CreateTable, scan data, with attrType: %d, attrLen: %d, offset: %d\n", aEntry->attrType, aEntry->attrLength, aEntry->offset);
+#endif
   RM_Record rec;
   while(fs.GetNextRec(rec) != RM_EOF){
     char *pData;
