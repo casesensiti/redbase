@@ -62,6 +62,10 @@ struct MBR {
     float lly;
     float urx; // upper right x
     float ury;
+    float area()
+    {
+        return (ury - lly) * (urx - llx);
+    }
 } ;
 //
 // Attribute types

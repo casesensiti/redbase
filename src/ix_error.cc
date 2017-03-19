@@ -27,9 +27,10 @@ static char *IX_WarnMsg[] = {
   (char*)"invalid scan instance",
   (char*)"invalid record entry",
   (char*)"end of file",
-  (char*)"IX warning",
   (char*)"index number too big",
-  (char*)"bad entry or header size"
+  (char*)"bad entry or header size",
+  (char*)"bad mbr entry passed to calcaEnlarge",
+  (char*)"IX warning"
 };
 
 static char *IX_ErrorMsg[] = {

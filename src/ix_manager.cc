@@ -52,7 +52,9 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     if (indexNo >= 10000)
         return IX_BADINDEXNO;
     int entrySize = sizeof(struct IX_Entry);
-    int M = (PF_PAGE_SIZE - sizeof(IX_FileHeader)) / entrySize;
+    // to correct: this M = 6 is set for easier test.
+    //int M = (PF_PAGE_SIZE - sizeof(IX_NodeHeader)) / entrySize;
+    int M = 6;
     int m = M / 3;
     if (m < 1)
         return IX_BADENTRYSIZE;
@@ -85,8 +87,10 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
 
     rHeader = (struct IX_NodeHeader *) prData;
     rHeader->ifUsed = TRUE;
-    rHeader->ntype = RootNode;
+    rHeader->isTreeNode = false;
+    rHeader->isRoot = true;
     rHeader->numEntry = 0;
+    rHeader->nextFreePage = NO_MORE_FREE_PAGES;
 
     header = (struct IX_FileHeader *) pData;
     header->entrySize = entrySize;

@@ -46,6 +46,9 @@ public:
     // Force index files to disk
     RC ForcePages();
 private:
+    RC ChooseLeaf(const struct MBR& m, PageNum& page);
+    RC calcaEnlarge(const struct MBR& inner, struct MBR& outer, float& enlarge);
+
     bool headerModified; // if header modified, should rewrite the header page
     bool openedIH; // whether this handle has been opened
     IX_FileHeader fileHeader;
@@ -121,6 +124,7 @@ void IX_PrintError(RC rc);
 #define IX_EOF                  (START_IX_WARN + 10)// End of index file
 #define IX_BADINDEXNO           (START_IX_WARN + 11)// Bad Specification for Index File, indexNo too big
 #define IX_BADENTRYSIZE         (START_IX_WARN + 12)// Bad entry or header size
+#define IX_BADMBRENTRY          (START_IX_WARN + 13)// Bad mbr entry passed to calcaEnlarge
 #define IX_LASTWARN             IX_EOF
 
 #define IX_ERROR                (START_IX_ERR - 0) // error
