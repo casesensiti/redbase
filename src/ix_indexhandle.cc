@@ -33,6 +33,7 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
     if (m.llx > m.urx || m.lly > m.ury) printf("In IX_IndexHandle::InsertEntry : MBR data not valid.\n");
 #endif
     // find spot
+    PageNum
 
 
 
@@ -80,7 +81,8 @@ RC IX_IndexHandle::ChooseLeaf(const struct MBR& m, PageNum& page) {
         sn = nh.firstEntry; // get first entry
         for (int i = 0; i < nh.numEntry; i++) {
             memcpy(&e, pData + sn * sizeof(IX_Entry), sizeof(IX_Entry));
-            calcaEnlarge(m, e.m, enlarge);
+            if ((rc = calcaEnlarge(m, e.m, enlarge)))
+                return rc;
             if (enlarge < minEnlarge) {
                 minEnlarge = enlarge;
                 minEnlargeEntry = sn;
@@ -88,6 +90,9 @@ RC IX_IndexHandle::ChooseLeaf(const struct MBR& m, PageNum& page) {
             sn = e.nextEntry;
         }
         memcpy(&e, pData + minEnlargeEntry * sizeof(IX_Entry), sizeof(IX_Entry));
+        // unpin previous page
+        if ((rc = pfh.UnpinPage(currPage)))
+            return rc;
         // get the node to search next
         if ((rc = e.child.GetPageNum(currPage)))
             return rc;
