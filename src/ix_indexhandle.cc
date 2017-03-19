@@ -12,6 +12,7 @@
 #include "pf.h"
 #include "comparators.h"
 #include <cstdio>
+#include <queue>
 
 IX_IndexHandle::IX_IndexHandle()
 {
@@ -45,17 +46,30 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
     if ((rc = ph.GetData(pageData))) // get node header info
         return rc;
     pnh = (struct IX_NodeHeader *) pageData;
+#ifdef MY_DEBUG
+    printf("\tInsert into page %d\n", toInsert);
+#endif
     // if have slot, insert to this node
     if (pnh->numEntry < fileHeader.M)
     {
         if ((rc = InsertToNode(pageData, pData, rid)))
             return rc;
-        pfh.UnpinPage(toInsert);
+        if ((rc = pfh.MarkDirty(toInsert)) || (rc = pfh.UnpinPage(toInsert)))
+            return rc;
+        ForcePages();
         return rc;
     }
-
     // if too many, split
 
+
+
+    return rc;
+}
+
+
+RC SplitNode(void* oData, void* nData, void* pData, const RID& rid, RID& insertedPos)
+{
+    RC rc = 0;
     return rc;
 }
 
@@ -75,7 +89,7 @@ RC IX_IndexHandle::InsertToNode(void* pageData, void* pData, const RID &rid)
     if (pnh->firstFreeSlot != NO__NEXT_SLOT)
     {
         free = pnh->firstFreeSlot;
-        pEntry = (IX_Entry *) pageData + sizeof(IX_NodeHeader) + free * sizeof(IX_Entry);
+        pEntry = (IX_Entry *) (pageData + sizeof(IX_NodeHeader) + free * sizeof(IX_Entry));
         if (pEntry->ifUsed)
             return IX_BADENTRY;
         pnh->firstFreeSlot = pEntry->nextEntry;
@@ -90,6 +104,8 @@ RC IX_IndexHandle::InsertToNode(void* pageData, void* pData, const RID &rid)
     return rc;
 }
 
+
+
 RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
 {
   // Implement this
@@ -98,6 +114,7 @@ RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
 RC IX_IndexHandle::ForcePages()
 {
   // Implement this
+    pfh.ForcePages();
 }
 
 // choose appropriate leaf node to insert MBR
@@ -166,4 +183,58 @@ RC IX_IndexHandle::calcaEnlarge(const struct MBR& inner, struct MBR& outer, floa
     if (enlarge < 0)
         return IX_BADMBRENTRY;
     return 0;
+}
+
+// Print this index
+RC IX_IndexHandle::Print()
+{
+    RC rc = 0;
+#ifdef MY_DEBUG
+    printf("IX_IndexHandle::Print() invoked\n");
+#endif
+    printf("Index information:\nM: %d, m: %d, rootPage: %d\n", fileHeader.M, fileHeader.m, fileHeader.rootPage);
+    printf("Node list\n------------------------------------------------------\n");
+    std::queue<PageNum> vp;
+    vp.push(fileHeader.rootPage);
+    PageNum curr, tmpP;
+    SlotNum sn, tmpS;
+    PF_PageHandle ph;
+    char* pData;
+    IX_NodeHeader* pnh;
+    IX_Entry* pe;
+    // while there is node not printed
+    while(vp.size() > 0) {
+        // get the page number of the node
+        curr = vp.front();
+        vp.pop();
+        // get node and its data
+        if ((rc = pfh.GetThisPage(curr, ph)))
+            return rc;
+        if ((rc = ph.GetData(pData)))
+            return rc;
+        // print node header information
+        pnh = (IX_NodeHeader *)pData;
+        printf("Node/Page %d, numEntry: %d, NodeType: ", curr, pnh->numEntry);
+        if (pnh->isTreeNode)
+            printf("TreeNode");
+        else printf("LeafNode");
+        if((rc = pnh->parent.GetPageNum(tmpP) || (rc = pnh->parent.GetSlotNum(tmpS))))
+            return rc;
+        printf(", parent: %d.%d\n", tmpP, tmpS);
+        // print entries in this node
+        sn = pnh->firstEntry;
+        for (int i = 0; i < pnh->numEntry; i++) {
+            pe = (IX_Entry *)(pData + sizeof(IX_NodeHeader) + sn * sizeof(IX_Entry));
+            printf("\tEntry %d. MBR: ", sn);
+            pe->m.print();
+            if((rc = pe->child.GetPageNum(tmpP) || (rc = pe->child.GetSlotNum(tmpS))))
+                return rc;
+            printf(". Child: %d.%d\n", tmpP, tmpS);
+            if (pnh->isTreeNode) vp.push(tmpP);
+            sn = pe->nextEntry;
+        }
+        if((rc = pfh.UnpinPage(curr)))
+            return rc;
+    }
+    return rc;
 }

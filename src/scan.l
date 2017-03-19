@@ -39,6 +39,7 @@ s_num                [+\-]?{num}
                              return T_QSTRING;}
 \"([^\"\n]|(\"\"))*\n       {printf("newline in string constant\n");}
 {letter}({letter}|{digit}|_)*   {return get_id(yylval.sval = yytext);}
+{letter}({letter}|{digit}|_)*\.{num}* {yylval.sval = yytext; return T_STRING;}
 "<"                  {return T_LT;}
 "<="                 {return T_LE;}
 ">"                  {return T_GT;}

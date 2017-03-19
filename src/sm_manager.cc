@@ -829,44 +829,51 @@ RC SM_Manager::Print(const char *relName)
   cout << "Print\n"
     << "   relName=" << relName << "\n";
 
-  RC rc = 0;
-  RM_Record relRec;
-  RelCatEntry *relEntry;
-  if((rc = GetRelEntry(relName, relRec, relEntry))) // retrieves relation info
-    return (SM_BADRELNAME);
-  int numAttr = relEntry->attrCount;
+    if (strchr(relName, '.') == NULL) {
+        RC rc = 0;
+        RM_Record relRec;
+        RelCatEntry *relEntry;
+        if ((rc = GetRelEntry(relName, relRec, relEntry))) // retrieves relation info
+            return (SM_BADRELNAME);
+        int numAttr = relEntry->attrCount;
 
-  // Sets up the DataAttrInfo for printing
-  DataAttrInfo * attributes = (DataAttrInfo *)malloc(numAttr* sizeof(DataAttrInfo));
-  if((rc = SetUpPrint(relEntry, attributes)))
-    return (rc);
+        // Sets up the DataAttrInfo for printing
+        DataAttrInfo *attributes = (DataAttrInfo *) malloc(numAttr * sizeof(DataAttrInfo));
+        if ((rc = SetUpPrint(relEntry, attributes)))
+            return (rc);
 
-  Printer printer(attributes, relEntry->attrCount);
-  printer.PrintHeader(cout);
+        Printer printer(attributes, relEntry->attrCount);
+        printer.PrintHeader(cout);
 
-  // open the file, and a scan through the entire file
-  RM_FileHandle fh;
-  RM_FileScan fs;
-  if((rc = rmm.OpenFile(relName, fh)) || (rc = fs.OpenScan(fh, INT, 4, 0, NO_OP, NULL))){
-    free(attributes);
-    return (rc);
-  }
+        // open the file, and a scan through the entire file
+        RM_FileHandle fh;
+        RM_FileScan fs;
+        if ((rc = rmm.OpenFile(relName, fh)) || (rc = fs.OpenScan(fh, INT, 4, 0, NO_OP, NULL))) {
+            free(attributes);
+            return (rc);
+        }
 
-  // Retrieve each record and print it
-  RM_Record rec;
-  while(fs.GetNextRec(rec) != RM_EOF){
-    char *pData;
-    if((rec.GetData(pData))){
-      free(attributes);
-      return (rc);
+        // Retrieve each record and print it
+        RM_Record rec;
+        while (fs.GetNextRec(rec) != RM_EOF) {
+            char *pData;
+            if ((rec.GetData(pData))) {
+                free(attributes);
+                return (rc);
+            }
+            printer.Print(cout, pData);
+        }
+        fs.CloseScan();
+
+        printer.PrintFooter(cout);
+        free(attributes); // free DataAttrInfo
     }
-    printer.Print(cout, pData);
-  }
-  fs.CloseScan();
-
-  printer.PrintFooter(cout);
-  free(attributes); // free DataAttrInfo
-
+    // if contains '.', is an index. Print in another way.
+    else {
+        RC rc = 0;
+        if((rc = ixm.Print(relName)))
+            return rc;
+    }
   return (0);
 }
 

@@ -25,6 +25,31 @@ RC IX_Manager::getIndexFileName(const char* fileName, int indexNo, char* dest){
     strcpy(dest, sIndexFileName.c_str());
     return (rc);
 }
+// Print index
+RC IX_Manager::Print(const char *indexFileName)
+{
+#ifdef MY_DEBUG
+    printf("IX_Manager::Print invoked.\n");
+#endif
+    RC rc = 0;
+    IX_IndexHandle ih;
+    std::string name(indexFileName);
+    std::string fileName, indexNo;
+    std::size_t found = name.find('.');
+    if (found == std::string::npos)
+        return IX_INVALIDINDEXNAME;
+    fileName = name.substr(0, found);
+    indexNo  = name.substr(found+1);
+#ifdef MY_DEBUG
+    printf("fileName: %s, indexNo: %d\n", fileName.c_str(), atoi(indexNo.c_str()));
+#endif
+
+    if ((rc = OpenIndex(fileName.c_str(), atoi(indexNo.c_str()), ih)))
+        return rc;
+    if ((rc = ih.Print()))
+        return rc;
+    return rc;
+}
 
 
 IX_Manager::IX_Manager(PF_Manager &pfm): pfm(pfm)
@@ -93,6 +118,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     rHeader->nextFreePage = NO_MORE_FREE_PAGES;
     rHeader->firstFreeSlot = NO__NEXT_SLOT;
     rHeader->firstEntry = NO__NEXT_ENTRY;
+    rHeader->parent = RID(0,0); // no parent entry
 
     header = (struct IX_FileHeader *) pData;
     header->entrySize = entrySize;
@@ -139,6 +165,9 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
                  IX_IndexHandle &indexHandle)
 {
     RC rc = 0;
+#ifdef MY_DEBUG
+    printf("IX_Manager::OpenIndex invoked. ");
+#endif
     if (fileName == NULL)
         return IX_BADFILENAME;
     if (indexHandle.openedIH)
