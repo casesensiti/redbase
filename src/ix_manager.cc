@@ -91,6 +91,8 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     rHeader->isRoot = true;
     rHeader->numEntry = 0;
     rHeader->nextFreePage = NO_MORE_FREE_PAGES;
+    rHeader->firstFreeSlot = NO__NEXT_SLOT;
+    rHeader->firstEntry = NO__NEXT_ENTRY;
 
     header = (struct IX_FileHeader *) pData;
     header->entrySize = entrySize;
@@ -167,7 +169,7 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
     if((rc2 = indexHandle.pfh.UnpinPage(page)))
         return (rc2);
 #ifdef MY_DEBUG
-    printf("Index open success");
+    printf("Index open success\n");
 #endif
     return rc;
 }

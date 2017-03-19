@@ -30,6 +30,7 @@ static char *IX_WarnMsg[] = {
   (char*)"index number too big",
   (char*)"bad entry or header size",
   (char*)"bad mbr entry passed to calcaEnlarge",
+  (char*)"Entry format not valid",
   (char*)"IX warning"
 };
 

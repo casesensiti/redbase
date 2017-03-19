@@ -7,7 +7,8 @@
 
 #endif //REDBASE_IX_INTERNAL_H
 #define NO_MORE_FREE_PAGES -1
-#define NO_MORE_NEXT_ENTRY -2
+#define NO__NEXT_SLOT -2
+#define NO__NEXT_ENTRY -3
 
 struct IX_NodeHeader {
     bool ifUsed;              // whether this page is free or used
@@ -16,6 +17,7 @@ struct IX_NodeHeader {
     bool isRoot;              // whether this node is root or not
     int numEntry;             // number of entries in this node
     SlotNum firstEntry;       // pointer to the first entry in this node
+    SlotNum firstFreeSlot;       // pointer to the first entry in this node
     PageNum parentPage;       // pointer to the parent of this node
 };
 

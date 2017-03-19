@@ -467,7 +467,7 @@ RC SM_Manager::CreateIndex(const char *relName,
     return (rc);
   }
 #ifdef MY_DEBUG
-    printf("In CreateTable, scan data, with attrType: %d, attrLen: %d, offset: %d\n", aEntry->attrType, aEntry->attrLength, aEntry->offset);
+    printf("In CreateIndex, scan data, with attrType: %d, attrLen: %d, offset: %d\n", aEntry->attrType, aEntry->attrLength, aEntry->offset);
 #endif
   RM_Record rec;
   while(fs.GetNextRec(rec) != RM_EOF){
