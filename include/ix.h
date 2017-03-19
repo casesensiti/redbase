@@ -45,10 +45,14 @@ public:
 
     // Force index files to disk
     RC ForcePages();
+
+    // Print this index
+    RC Print();
 private:
     RC InsertToNode(void* pageData, void* pData, const RID &rid);
     RC ChooseLeaf(const struct MBR& m, PageNum& page);
     RC calcaEnlarge(const struct MBR& inner, struct MBR& outer, float& enlarge);
+    RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos);
 
     bool headerModified; // if header modified, should rewrite the header page
     bool openedIH; // whether this handle has been opened
@@ -100,6 +104,9 @@ public:
 
     // Close an Index
     RC CloseIndex(IX_IndexHandle &indexHandle);
+
+    // print an index
+    RC Print(const char* indexFileName);
 private:
     PF_Manager &pfm;
     // helper to construct the index file name
@@ -127,6 +134,7 @@ void IX_PrintError(RC rc);
 #define IX_BADENTRYSIZE         (START_IX_WARN + 12)// Bad entry or header size
 #define IX_BADMBRENTRY          (START_IX_WARN + 13)// Bad mbr entry passed to calcaEnlarge
 #define IX_BADENTRY             (START_IX_WARN + 14)// Entry format not valid
+#define IX_INVALIDINDEXNAME     (START_IX_WARN + 15)// In Print, index file name not valid
 #define IX_LASTWARN             IX_EOF
 
 #define IX_ERROR                (START_IX_ERR - 0) // error

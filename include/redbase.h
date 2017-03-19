@@ -2,6 +2,7 @@
 // redbase.h
 //   global declarations
 //
+#include <cstdio>
 #ifndef REDBASE_H
 #define REDBASE_H
 
@@ -65,6 +66,9 @@ struct MBR {
     float area()
     {
         return (ury - lly) * (urx - llx);
+    }
+    void print() {
+        printf("ll(%f, %f), ur(%f, %f)", llx, lly, urx, ury);
     }
 } ;
 //

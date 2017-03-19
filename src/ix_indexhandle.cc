@@ -39,8 +39,8 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
         return rc;
     // insert into node
     PF_PageHandle ph;
-    char* pageData;
-    IX_NodeHeader* pnh; // pointer to node header
+    char *pageData;
+    IX_NodeHeader *pnh; // pointer to node header
     if ((rc = pfh.GetThisPage(toInsert, ph))) // get page info
         return rc;
     if ((rc = ph.GetData(pageData))) // get node header info
@@ -60,18 +60,64 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
         return rc;
     }
     // if too many, split
+    if ((rc = pfh.UnpinPage(toInsert)))
+        return rc;
+    RID dummyRID(0,0);
+    //if((rc = SplitNode(pageData, npageData, pData, rid, dummyRID))) // This time returned RID is not used
+      //  return rc;
+
 
 
 
     return rc;
 }
 
-
-RC SplitNode(void* oData, void* nData, void* pData, const RID& rid, RID& insertedPos)
+// oData is the data of original node, nData is the data of new node. pData point to data to be inserted
+// rid is the RID of data inserted with pData, insertedPos is the position of inserted entry
+RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos)
 {
     RC rc = 0;
+    PageNum newPage;
+    PF_PageHandle ph, nph;
+    char *pageData, *npageData;
+    IX_NodeHeader *pnh, *npnh; // pointer to node header
+    // open page to be splitted
+    if ((rc = pfh.GetThisPage(page, ph)) || (rc = ph.GetData(pageData)))
+        return rc;
+    pnh = (IX_NodeHeader *) pageData;
+    // get a free page to save new node
+    if (fileHeader.numFreePage == 0)
+    {
+        if ((rc = pfh.AllocatePage(nph)))
+            return rc;
+        if ((rc = nph.GetData(npageData)))
+            return rc;
+        npnh = (IX_NodeHeader *) npageData;
+        fileHeader.numPage++;
+    } else {
+        newPage = fileHeader.firstFreePage;
+        if ((rc = pfh.GetThisPage(newPage, nph)))
+            return rc;
+        if ((rc = nph.GetData(npageData)))
+            return rc;
+        npnh = (IX_NodeHeader *) npageData;
+        fileHeader.numFreePage--;
+        fileHeader.firstFreePage = npnh->nextFreePage;
+    }
+    headerModified = true;
+    npnh->ifUsed = true;
+    npnh->firstEntry = NO_NEXT_ENTRY;
+    npnh->isRoot = false;
+    npnh->isTreeNode = pnh->isTreeNode;
+    npnh->firstFreeSlot = NO_NEXT_SLOT;
+    npnh->numEntry = 0;
+    npnh->parent = RID(0,0); // RID to be determined
+    //if (pnh->numEntry )
+
     return rc;
 }
+
+
 
 // insert MBR data pointed by pData, with RID& rid into Node pointed by pageData
 // maintain NodeHeader information
@@ -86,7 +132,7 @@ RC IX_IndexHandle::InsertToNode(void* pageData, void* pData, const RID &rid)
     e.ifUsed = true;
     e.m = *(struct MBR *)pData;
     // if have free slot, insert into free slot. Otherwise, insert into numEntry+1 slot
-    if (pnh->firstFreeSlot != NO__NEXT_SLOT)
+    if (pnh->firstFreeSlot != NO_NEXT_SLOT)
     {
         free = pnh->firstFreeSlot;
         pEntry = (IX_Entry *) (pageData + sizeof(IX_NodeHeader) + free * sizeof(IX_Entry));
@@ -220,7 +266,9 @@ RC IX_IndexHandle::Print()
         else printf("LeafNode");
         if((rc = pnh->parent.GetPageNum(tmpP) || (rc = pnh->parent.GetSlotNum(tmpS))))
             return rc;
-        printf(", parent: %d.%d\n", tmpP, tmpS);
+        printf(", parent: %d.%d, MBR: ", tmpP, tmpS);
+        pnh->m.print();
+        printf("\n");
         // print entries in this node
         sn = pnh->firstEntry;
         for (int i = 0; i < pnh->numEntry; i++) {

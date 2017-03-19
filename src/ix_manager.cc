@@ -116,8 +116,8 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     rHeader->isRoot = true;
     rHeader->numEntry = 0;
     rHeader->nextFreePage = NO_MORE_FREE_PAGES;
-    rHeader->firstFreeSlot = NO__NEXT_SLOT;
-    rHeader->firstEntry = NO__NEXT_ENTRY;
+    rHeader->firstFreeSlot = NO_NEXT_SLOT;
+    rHeader->firstEntry = NO_NEXT_ENTRY;
     rHeader->parent = RID(0,0); // no parent entry
 
     header = (struct IX_FileHeader *) pData;
