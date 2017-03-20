@@ -49,10 +49,10 @@ public:
     // Print this index
     RC Print();
 private:
-    RC InsertToNode(void* pageData, void* pData, const RID &rid);
+    RC InsertToNode(void* pageData, void* pData, const RID &rid, SlotNum& insertedSlot);
     RC ChooseLeaf(const struct MBR& m, PageNum& page);
-    RC calcaEnlarge(const struct MBR& inner, struct MBR& outer, float& enlarge);
-    RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos);
+    float calcaEnlarge(const struct MBR& inner, struct MBR& outer);
+    RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum newPage);
     RC ExpandMBR(struct MBR& inner, struct MBR& outer);
 
     bool headerModified; // if header modified, should rewrite the header page
