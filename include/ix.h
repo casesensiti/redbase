@@ -53,6 +53,7 @@ private:
     RC ChooseLeaf(const struct MBR& m, PageNum& page);
     RC calcaEnlarge(const struct MBR& inner, struct MBR& outer, float& enlarge);
     RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos);
+    RC ExpandMBR(struct MBR& inner, struct MBR& outer);
 
     bool headerModified; // if header modified, should rewrite the header page
     bool openedIH; // whether this handle has been opened
@@ -135,6 +136,7 @@ void IX_PrintError(RC rc);
 #define IX_BADMBRENTRY          (START_IX_WARN + 13)// Bad mbr entry passed to calcaEnlarge
 #define IX_BADENTRY             (START_IX_WARN + 14)// Entry format not valid
 #define IX_INVALIDINDEXNAME     (START_IX_WARN + 15)// In Print, index file name not valid
+#define IX_INVALIDNODETOSPLIT   (START_IX_WARN + 16)// In SplitNode, the node to be splitted is not qualified.
 #define IX_LASTWARN             IX_EOF
 
 #define IX_ERROR                (START_IX_ERR - 0) // error

@@ -80,7 +80,7 @@ RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& ins
     PageNum newPage;
     PF_PageHandle ph, nph;
     char *pageData, *npageData;
-    IX_NodeHeader *pnh, *npnh; // pointer to node header
+    IX_NodeHeader *pnh, *npnh, *opnh; // pointer to node header
     // open page to be splitted
     if ((rc = pfh.GetThisPage(page, ph)) || (rc = ph.GetData(pageData)))
         return rc;
@@ -112,12 +112,33 @@ RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& ins
     npnh->firstFreeSlot = NO_NEXT_SLOT;
     npnh->numEntry = 0;
     npnh->parent = RID(0,0); // RID to be determined
-    //if (pnh->numEntry )
+    if (pnh->numEntry != fileHeader.M)
+        return IX_INVALIDNODETOSPLIT;
+    // distribute entries.
+    // copy original data, empty original node
+    char* oData[PF_PAGE_SIZE];
+    memcpy(oData, pageData, PF_PAGE_SIZE);
+    opnh = (IX_NodeHeader *)oData;
+    pnh->ifUsed = true;
+    pnh->firstEntry = NO_NEXT_ENTRY;
+    pnh->firstFreeSlot = NO_NEXT_SLOT;
+    pnh->numEntry = 0;
+    // calculate max/min llx, lly, urx, ury
+    float max[4], min[4];
+    SlotNum maxS[4], minS[4];
+
+    // traverse the node
 
     return rc;
 }
 
-
+/*
+RC IX_IndexHandle::DeleteFromNode()
+{
+    RC rc = 0;
+    return rc;
+}
+*/
 
 // insert MBR data pointed by pData, with RID& rid into Node pointed by pageData
 // maintain NodeHeader information
@@ -146,11 +167,22 @@ RC IX_IndexHandle::InsertToNode(void* pageData, void* pData, const RID &rid)
     e.nextEntry = pnh->firstEntry;
     pnh->firstEntry = free;
     memcpy(pageData + sizeof(IX_NodeHeader) + free * sizeof(IX_Entry), &e, sizeof(IX_Entry));
+    // if first entry inserted
+    if (pnh->numEntry == 0) pnh->m = e.m;
+    // otherwise
+    else ExpandMBR(e.m, pnh->m);
+    headerModified = true;
     pnh->numEntry = pnh->numEntry + 1;
     return rc;
 }
 
-
+RC IX_IndexHandle::ExpandMBR(struct MBR &inner, struct MBR &outer)
+{
+    outer.llx = std::min(inner.llx, outer.llx);
+    outer.lly = std::min(inner.lly, outer.lly);
+    outer.urx = std::max(inner.urx, outer.urx);
+    outer.ury = std::max(inner.ury, outer.ury);
+}
 
 RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
 {
