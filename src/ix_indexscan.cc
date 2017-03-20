@@ -27,6 +27,10 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle &indexHandle,
                 ClientHint  pinHint)
 {
   // Implement this
+#ifdef MY_DEBUG
+    printf("IX::IndexScan::OpenScan invoked.\n");
+    ((struct MBR*) value)->print();
+#endif
 }
 
 RC IX_IndexScan::GetNextEntry(RID &rid)

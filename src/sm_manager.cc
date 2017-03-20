@@ -65,7 +65,8 @@ bool recInsert_string(char *location, string value, int length){
  */
 SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm) : ixm(ixm), rmm(rmm){
   printIndex = false;
-  useQO = true;
+  useQO = false;
+  //useQO = true; // to refine: set useQO = false to simplify the process to invoke IX_IndexScan related methods
   calcStats = false;
   printPageStats = true;
 }
