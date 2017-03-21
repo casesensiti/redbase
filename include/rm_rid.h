@@ -40,6 +40,7 @@ public:
     RC GetSlotNum(SlotNum &slotNum) const;         // Return slot number
 
     RC isValidRID() const; // checks if it is a valid RID
+    RC Print();
 
 private:
   PageNum page;

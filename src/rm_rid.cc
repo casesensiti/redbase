@@ -60,3 +60,7 @@ RC RID::isValidRID() const{
   else
     return RM_INVALIDRID;
 }
+
+RC RID::Print() {
+  printf("%d.%d", page, slot);
+}

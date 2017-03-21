@@ -54,6 +54,9 @@ private:
     float calcaEnlarge(const struct MBR& inner, struct MBR& outer);
     RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum newPage);
     RC ExpandMBR(struct MBR& inner, struct MBR& outer);
+    RC AdjustTree(PageNum page, PageNum page2);
+    RC PrintNodeHeader(struct IX_NodeHeader* pnh);
+    RC PrintEntry(struct IX_Entry* pe);
 
     bool headerModified; // if header modified, should rewrite the header page
     bool openedIH; // whether this handle has been opened

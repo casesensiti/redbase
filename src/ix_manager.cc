@@ -68,7 +68,11 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
                    AttrType attrType, int attrLength)
 {
     RC rc = 0;
+#ifdef MY_DEBUG
     printf("CreateIndex invoked for file %s, on indexNo %d, with attrType %d, attrLength %d\n", fileName, indexNo, attrType, attrLength);
+    printf("size of IX_NoheHeader: %d, size of IX_Entry: %d", sizeof(IX_NodeHeader), sizeof(IX_Entry));
+#endif
+
     // check integrity of arguments
     if (fileName == NULL)
         return IX_BADFILENAME;
@@ -138,6 +142,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     if((rc2 = fh.MarkDirty(page)) || (rc2 = fh.UnpinPage(page)) || (rc2 = fh.MarkDirty(rPage))
        || (rc2 = fh.UnpinPage(rPage)) || (rc2 = pfm.CloseFile(fh)))
         return (rc2);
+    fh.ForcePages();
     return (rc);
 }
 
