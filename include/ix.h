@@ -52,7 +52,7 @@ private:
     RC InsertToNode(void* pageData, void* pData, const RID &rid, SlotNum& insertedSlot);
     RC ChooseLeaf(const struct MBR& m, PageNum& page);
     float calcaEnlarge(const struct MBR& inner, struct MBR& outer);
-    RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum newPage);
+    RC SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum& newPage);
     RC ExpandMBR(struct MBR& inner, struct MBR& outer);
     RC AdjustTree(PageNum page, PageNum page2);
     RC PrintNodeHeader(struct IX_NodeHeader* pnh);

@@ -62,7 +62,7 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
         return rc;
     pnh = (struct IX_NodeHeader *) pageData;
 #ifdef MY_DEBUG
-    printf("\tInsert into page %d\n", toInsert);
+    //printf("\tInsert into page %d\n", toInsert);
 #endif
     // if have slot, insert to this node
     if (pnh->numEntry < fileHeader.M)
@@ -71,12 +71,11 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
             return rc;
 #ifdef MY_DEBUG
         IX_Entry *pe = (struct IX_Entry*) (pageData + sizeof(IX_NodeHeader) + dummySlot * sizeof(IX_Entry));
-        printf("In InsertEntry, varify the entry inserted is ");
-        PrintEntry(pe);
-        printf("\n");
+        //printf("In InsertEntry, varify the entry inserted is ");PrintEntry(pe);printf("\n");
 #endif
         if ((rc = pfh.MarkDirty(toInsert)) || (rc = pfh.UnpinPage(toInsert)))
             return rc;
+        //************add adjust tree here
         ForcePages();
         return rc;
     }
@@ -98,7 +97,7 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
 RC IX_IndexHandle::AdjustTree(PageNum page, PageNum page2)
 {
 #ifdef MY_DEBUG
-    printf("AdjustTree invoked\n");
+    printf("AdjustTree invoked, with page: %d, page2:%d\n", page, page2);
 #endif
     // local variables
     RC rc = 0;
@@ -111,10 +110,13 @@ RC IX_IndexHandle::AdjustTree(PageNum page, PageNum page2)
     // get nodes, get node headers
     if ((rc = pfh.GetThisPage(page, ph)) || (rc = ph.GetData(pageData)))
         return rc;
-    if ((rc = pfh.GetThisPage(page2, ph2)) || (rc = ph.GetData(pageData2)))
+    if ((rc = pfh.GetThisPage(page2, ph2)) || (rc = ph2.GetData(pageData2)))
         return rc;
     pnh = (IX_NodeHeader *) pageData;
     pnh2 = (IX_NodeHeader *) pageData2;
+#ifdef MY_DEBUG
+    printf("Original pages read finish.\n");
+#endif
     // if page is root node, create new node
     if (pnh->isRoot) {
         // get a new page for the new root node
@@ -147,6 +149,10 @@ RC IX_IndexHandle::AdjustTree(PageNum page, PageNum page2)
         npnh->numEntry = 0;
         npnh->parent = RID(0,0); // root node has no parent
         // insert two child node
+#ifdef MY_DEBUG
+        //printf("In AdjustTree, addr of pnh: %p, mbr of page %d: ", pnh, page); pnh->m.print();
+        //printf("\naddr of pnh2: %p, mbr of page %d: ", pnh2, page2); pnh2->m.print(); printf("\n");
+#endif
         if((rc = InsertToNode(npageData, &(pnh->m), RID(page,0), insertedSlot)))
             return rc;
         pnh->parent = RID(newPage, insertedSlot);
@@ -167,7 +173,7 @@ RC IX_IndexHandle::AdjustTree(PageNum page, PageNum page2)
 // oData is the data of original node, nData is the data of new node. pData point to data to be inserted
 // rid is the RID of data inserted with pData, insertedPos is the position of inserted entry
 // newPage is the page which stores the new node. New node has a dummy parent.
-RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum newPage)
+RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& insertedPos, PageNum& newPage)
 {
     RC rc = 0;
     PF_PageHandle ph, nph;
@@ -232,6 +238,7 @@ RC IX_IndexHandle::SplitNode(PageNum page, void* pData, const RID& rid, RID& ins
     }
     // traverse entries of the node
 #ifdef MY_DEBUG
+    printf("new page got is: %d", newPage);
     printf("In splitnode, ");
     PrintNodeHeader(opnh);
     //dump(oData);
@@ -354,11 +361,7 @@ RC IX_IndexHandle::InsertToNode(void* pageData, void* pData, const RID &rid, Slo
     e.ifUsed = true;
     e.m = *(struct MBR *)pData;
 #ifdef MY_DEBUG
-    printf("In InsertToNode, receive data: MBR: ");
-    e.m.print();
-    printf(" RID: ");
-    e.child.Print();
-    printf("\n");
+    printf("In InsertToNode, receive data: MBR: ");e.m.print();printf(" RID: ");e.child.Print();printf("\n");
 #endif
     if (pnh->numEntry >= fileHeader.M)
         return IX_NODEFULL;
