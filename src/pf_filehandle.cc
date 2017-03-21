@@ -205,7 +205,9 @@ RC PF_FileHandle::GetThisPage(PageNum pageNum, PF_PageHandle &pageHandle) const
 {
    int  rc;               // return code
    char *pPageBuf;        // address of page in buffer pool
-
+#ifdef PF_DEBUG
+   printf("Page %d pinned\n", pageNum);
+#endif
    // File must be open
    if (!bFileOpen)
       return (PF_CLOSEDFILE);
@@ -300,7 +302,9 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle &pageHandle)
    // Set the pageHandle local variables
    pageHandle.pageNum = pageNum;
    pageHandle.pPageData = pPageBuf + sizeof(PF_PageHdr);
-
+#ifdef PF_DEBUG
+   printf("Page %d pinned\n", pageNum);
+#endif
    // Return ok
    return (0);
 }
@@ -400,6 +404,9 @@ RC PF_FileHandle::MarkDirty(PageNum pageNum) const
 //
 RC PF_FileHandle::UnpinPage(PageNum pageNum) const
 {
+#ifdef PF_DEBUG
+   printf("Page %d unpinned\n", pageNum);
+#endif
    // File must be open
    if (!bFileOpen)
       return (PF_CLOSEDFILE);

@@ -10,6 +10,7 @@
 #define NO_NEXT_SLOT -2
 #define NO_NEXT_ENTRY -3
 #define NODE_TO_INSERT -4
+#define DUMMY_PAGE -5
 
 struct IX_NodeHeader {
     bool ifUsed;              // whether this page is free or used

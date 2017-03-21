@@ -57,6 +57,7 @@ private:
     RC AdjustTree(PageNum page, PageNum page2);
     RC PrintNodeHeader(struct IX_NodeHeader* pnh);
     RC PrintEntry(struct IX_Entry* pe);
+    RC RecomputeMBR(char* pData);
 
     bool headerModified; // if header modified, should rewrite the header page
     bool openedIH; // whether this handle has been opened

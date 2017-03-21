@@ -7,6 +7,7 @@
 #define REDBASE_H
 
 #define MY_DEBUG
+#define PF_DEBUG
 
 // Please DO NOT include any other files in this file.
 
